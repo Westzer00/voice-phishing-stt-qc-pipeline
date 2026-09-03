@@ -1,4 +1,6 @@
-# Voice Phishing STT QC Pipeline
+# 	
+🛡 Voice Phishing STT QC Pipeline 	
+🛡
 
 > **Whisper STT · High-Recall QC · NeMo Diarization · Human-in-the-loop Review**
 
