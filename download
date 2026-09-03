@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+*.wav
+*.mp3
+*.flac
+*.tar
+*.tar.gz
+*.zip
+outputs/
+review_results/
+.DS_Store
+Thumbs.db

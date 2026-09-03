@@ -1,0 +1,4 @@
+soundfile>=0.12
+omegaconf>=2.3
+torch
+nemo_toolkit[asr]

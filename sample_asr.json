@@ -1,0 +1,60 @@
+{
+  "duration_sec": 42.0,
+  "segments": [
+    {
+      "id": 0,
+      "start": 0.2,
+      "end": 3.4,
+      "text": "안녕하세요 고객님 상담센터입니다.",
+      "avg_logprob": -0.22,
+      "compression_ratio": 1.15,
+      "no_speech_prob": 0.02,
+      "words": [
+        {"start": 0.2, "end": 0.8, "word": "안녕하세요 ", "probability": 0.93},
+        {"start": 0.8, "end": 1.5, "word": "고객님 ", "probability": 0.90},
+        {"start": 1.5, "end": 3.4, "word": "상담센터입니다.", "probability": 0.91}
+      ]
+    },
+    {
+      "id": 1,
+      "start": 8.0,
+      "end": 12.2,
+      "text": "고객님 계좌번호 확인이 필요합니다.",
+      "avg_logprob": -0.62,
+      "compression_ratio": 1.30,
+      "no_speech_prob": 0.04,
+      "words": [
+        {"start": 8.0, "end": 8.8, "word": "고객님 ", "probability": 0.78},
+        {"start": 8.8, "end": 10.4, "word": "계좌번호 ", "probability": 0.41},
+        {"start": 10.4, "end": 12.2, "word": "확인이 필요합니다.", "probability": 0.52}
+      ]
+    },
+    {
+      "id": 2,
+      "start": 16.0,
+      "end": 19.2,
+      "text": "금액은 삼백만 원으로 확인됩니다.",
+      "avg_logprob": -0.88,
+      "compression_ratio": 1.10,
+      "no_speech_prob": 0.03,
+      "words": [
+        {"start": 16.0, "end": 16.9, "word": "금액은 ", "probability": 0.81},
+        {"start": 16.9, "end": 18.0, "word": "삼백만 원으로 ", "probability": 0.43},
+        {"start": 18.0, "end": 19.2, "word": "확인됩니다.", "probability": 0.72}
+      ]
+    },
+    {
+      "id": 3,
+      "start": 27.0,
+      "end": 30.0,
+      "text": "네 알겠습니다.",
+      "avg_logprob": -0.18,
+      "compression_ratio": 1.05,
+      "no_speech_prob": 0.01,
+      "words": [
+        {"start": 27.0, "end": 27.5, "word": "네 ", "probability": 0.96},
+        {"start": 27.5, "end": 30.0, "word": "알겠습니다.", "probability": 0.94}
+      ]
+    }
+  ]
+}

@@ -1,2 +1,5 @@
-# voice-phishing-stt-qc-pipeline
-Human-in-the-loop STT quality pipeline using Whisper, high-recall QC routing and NeMo diarization
+# Assets
+
+실제 검수 UI 스크린샷을 공개할 수 있다면 이 폴더에 `reviewer_ui.png`로 추가합니다.
+
+스크린샷을 올리기 전에는 실제 통화 내용, 파일명, seed, 서버 주소 등 식별 가능한 정보가 보이지 않는지 확인합니다.
