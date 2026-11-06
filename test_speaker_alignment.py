@@ -1,4 +1,4 @@
-from src.speaker_alignment import align_words, best_speaker_for_word
+from speaker_alignment import align_words, best_speaker_for_word
 
 
 def test_overlap_wins():
