@@ -1,4 +1,4 @@
-from src.review_planner import ReviewIssue, build_review_plan
+from review_planner import ReviewIssue, build_review_plan
 
 
 def test_two_far_issues_are_multi_local():
