@@ -1,4 +1,4 @@
-from src.qc_router import QCRules, flags_for_segment, route_segments
+from qc_router import QCRules, flags_for_segment, route_segments
 
 
 def test_critical_low_confidence_is_routed():
