@@ -37,7 +37,8 @@ ASR output
 
 최종 프로젝트 기준:
 
-- 전화 음성 **511건** STT 처리
+- 전화 음성 **511건** STT 처리 (읽기 가능한 509건 합계 약 2,984분)
+- 검수 후 최종 **398건**의 검증 데이터셋 구축
 - QC router에서 **5,152개 suspicious candidate segment** 선별
 - call-level anomaly **37건** 별도 재검토
 - 최종 결과는 자동 출력 그대로 사용하지 않고 Human Review layer를 거쳐 확정
@@ -76,13 +77,13 @@ Streamlit Human Review
 Corrected STT Layer
 ```
 
-자세한 구조: [`docs/architecture.md`](docs/architecture.md)
+자세한 구조: [`architecture.md`](architecture.md)
 
 ---
 
 ## 4. High-Recall QC Router
 
-[`src/qc_router.py`](src/qc_router.py)
+[`qc_router.py`](qc_router.py)
 
 다음 신호를 조합해 review candidate를 찾습니다.
 
@@ -99,14 +100,14 @@ Corrected STT Layer
 인접 candidate는 앞뒤 context를 포함해 하나의 listening span으로 병합합니다.
 
 ```bash
-python -m src.qc_router examples/sample_asr.json
+python qc_router.py sample_asr.json
 ```
 
 ---
 
 ## 5. Word-level Speaker Alignment
 
-[`src/speaker_alignment.py`](src/speaker_alignment.py)
+[`speaker_alignment.py`](speaker_alignment.py)
 
 Whisper segment 단위 speaker assignment 대신 **word timestamp와 diarization interval의 실제 시간 overlap**을 사용합니다.
 
@@ -127,16 +128,16 @@ adjacent words → speaker turn
 시간 경계가 아주 조금 어긋난 경우에는 word midpoint 기준 0.5초 이내의 가장 가까운 diarization interval을 fallback으로 사용합니다.
 
 ```bash
-python -m src.speaker_alignment \
-  examples/sample_asr.json \
-  examples/sample_diarization.json
+python speaker_alignment.py \
+  sample_asr.json \
+  sample_diarization.json
 ```
 
 ---
 
 ## 6. Audio Review Plan
 
-[`src/review_planner.py`](src/review_planner.py)
+[`review_planner.py`](review_planner.py)
 
 사람이 모든 통화를 처음부터 끝까지 듣지 않도록 issue 위치를 기준으로 listening window를 만듭니다.
 
@@ -150,7 +151,7 @@ python -m src.speaker_alignment \
 
 ## 7. Human Review UI
 
-[`app/review_app.py`](app/review_app.py)
+[`review_app.py`](review_app.py)
 
 운영 UI의 핵심 흐름을 공개용 synthetic data로 재구성했습니다.
 
@@ -173,7 +174,7 @@ python -m src.speaker_alignment \
 
 ```bash
 pip install -r requirements.txt
-streamlit run app/review_app.py
+streamlit run review_app.py
 ```
 
 실제 운영 버전에는 clip caching, ffmpeg 구간 추출, autosave, 다음 미검수 이동 등 검수 속도를 줄이기 위한 기능도 포함했습니다. 공개 repo에서는 데이터·경로 의존성이 큰 부분을 제외했습니다.
@@ -182,7 +183,7 @@ streamlit run app/review_app.py
 
 ## 8. NeMo Diarization
 
-[`src/nemo_diarization.py`](src/nemo_diarization.py)
+[`nemo_diarization.py`](nemo_diarization.py)
 
 실제 workflow에서 사용한 구성 중 다음 부분을 공개용으로 정리했습니다.
 
@@ -205,19 +206,20 @@ NeMo 전체 config와 checkpoint는 원본 프로젝트에 포함하지 않습�
 ├── CONTRIBUTION.md
 ├── requirements.txt
 ├── requirements-nemo.txt
-├── src/
-│   ├── qc_router.py
-│   ├── speaker_alignment.py
-│   ├── review_planner.py
-│   └── nemo_diarization.py
-├── app/
-│   └── review_app.py
-├── examples/
-│   ├── sample_asr.json
-│   ├── sample_diarization.json
-│   └── sample_review_plan.csv
-├── tests/
-└── docs/
+├── qc_router.py
+├── speaker_alignment.py
+├── review_planner.py
+├── nemo_diarization.py
+├── review_app.py
+├── sample_asr.json
+├── sample_diarization.json
+├── sample_review_plan.csv
+├── test_qc_router.py
+├── test_speaker_alignment.py
+├── test_review_planner.py
+├── architecture.md
+├── qc_rules.md
+└── public_release_notes.md
 ```
 
 ---
@@ -233,4 +235,4 @@ NeMo 전체 config와 checkpoint는 원본 프로젝트에 포함하지 않습�
 - 프로젝트의 모든 팀원 코드
 - 과거 backup / 실험용 shell script
 
-공개 전 정리 내용은 [`docs/public_release_notes.md`](docs/public_release_notes.md)에 적었습니다.
+공개 전 정리 내용은 [`public_release_notes.md`](public_release_notes.md)에 적었습니다.
