@@ -1,3 +1,4 @@
+import pytest
 from src.speaker_alignment import align_words, best_speaker_for_word
 
 
@@ -46,3 +47,18 @@ def test_time_gap_starts_new_turn_for_same_speaker():
     assert len(words) == 2
     assert len(turns) == 2
     assert turns[0]["speaker"] == turns[1]["speaker"] == "A"
+
+@pytest.mark.parametrize("start,end", [
+    (-0.1, 1.0),
+    (2.0, 1.0),
+    (float("nan"), 1.0),
+    (0.0, float("inf")),
+])
+def test_invalid_word_timestamps_raise_instead_of_silent_alignment(start, end):
+    diar = [{"start": 0.0, "end": 2.0, "speaker": "A"}]
+    with pytest.raises(ValueError, match="Invalid ASR word interval"):
+        best_speaker_for_word(start, end, diar)
+    with pytest.raises(ValueError, match="Invalid ASR word interval"):
+        align_words({"segments": [{"words": [
+            {"start": start, "end": end, "word": "test"}
+        ]}]}, diar)
