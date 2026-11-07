@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 
@@ -71,12 +72,28 @@ def parse_rttm(path: Path) -> list[dict]:
         if parts[0] != "SPEAKER":
             continue
 
-        start = float(parts[3])
-        duration = float(parts[4])
+        try:
+            start = float(parts[3])
+            duration = float(parts[4])
+        except ValueError as exc:
+            raise ValueError(f"Invalid RTTM time at line {line_number}: {line}") from exc
+
+        end = start + duration
+        if (
+            not math.isfinite(start)
+            or not math.isfinite(duration)
+            or not math.isfinite(end)
+            or start < 0
+            or duration <= 0
+        ):
+            raise ValueError(
+                f"Invalid RTTM interval at line {line_number}: "
+                f"start={start}, duration={duration}"
+            )
         segments.append(
             {
                 "start": round(start, 3),
-                "end": round(start + duration, 3),
+                "end": round(end, 3),
                 "speaker": parts[7],
             }
         )

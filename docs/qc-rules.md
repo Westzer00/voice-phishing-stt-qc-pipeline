@@ -1,6 +1,6 @@
 # QC Router
 
-공개 버전의 규칙은 실제 production code에서 사용한 high-recall screening 로직을 작은 모듈로 분리한 것입니다.
+이 저장소의 규칙은 기업연계 프로젝트에서 사용한 오류 의심 구간 선별 방식을 공개 가능한 작은 모듈로 정리한 것입니다. 실제 기업 서버에 배포한 원본과 동일한 코드라고 주장하지 않습니다.
 
 | Flag | 의미 |
 |---|---|
@@ -10,6 +10,6 @@
 | `LONG_SEGMENT` | 비정상적으로 긴 segment |
 | `REPEATED_SEGMENT` | 가까운 위치에서 동일 문장이 반복 |
 | `LOW_WORD_CONF` | low-confidence word 비중이 높음 |
-| `CRITICAL_TERM_LOWCONF` | 숫자·금융·기관/신원 표현과 low-confidence word가 함께 존재 |
+| `CRITICAL_TERM_LOWCONF` | 중요 표현을 포함한 **발화 전체**에서 신뢰도가 낮은 단어가 하나 이상 발견됨(중요 단어 자체의 오류 판정 아님) |
 
 Flag가 발생해도 text를 자동 교체하지 않습니다. 인접 구간을 context padding과 함께 합쳐 review span으로 넘깁니다.
