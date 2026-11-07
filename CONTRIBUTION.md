@@ -1,14 +1,16 @@
-# Contribution Scope
+# STT 검수 개발 담당 내역
 
-5인 팀으로 진행한 보이스피싱 AI 프로젝트 중, 이 저장소는 제가 직접 설명 가능한 **STT 품질관리와 Human Review workflow**를 중심으로 정리했습니다.
+EXEM × ASAC 기업연계 프로젝트 · 보이스피싱 음성인식 데이터 품질 검수
 
-주요 작업:
+## 개인 수행
+- Whisper large-v3 기반 **511건 STT 처리·검수** (읽기 가능한 509건 약 2,984분)
+- 신뢰도·중요 용어·반복·누락 신호를 활용한 QC 선별 로직 구현
+- **5,152개 오류 의심 구간** 선별 및 통화 **37건** 재검토 대상으로 분류
+- NeMo 화자 구분 결과와 Whisper 단어 타임스탬프 정렬
+- 검수 범위 결정 로직(LOCAL / MULTI_LOCAL / FULL) 개발
+- Streamlit 원음 비교·수정 검수 UI 개발, 최종 **398건 검증 데이터셋 구축**
 
-- Whisper large-v3 기반 STT 실행 및 품질 분석
-- segment / word-level 신뢰도와 도메인 중요 표현을 함께 보는 QC router
-- suspicious span 생성과 검수 범위 축소
-- NeMo diarization 결과와 Whisper word timestamp의 temporal alignment
-- `LOCAL / MULTI_LOCAL / FULL` 기반 audio review plan 구성
-- Streamlit 기반 검수 UI 개발 및 운영 개선
+## 팀 프로젝트와 연결
+확정 데이터를 RAG 검색, 유형 분류, 시나리오 생성·검수 과정에 연계. 전체 워크플로우는 5인 팀의 공동 결과입니다.
 
-전체 서비스의 RAG, 분류, 시나리오 생성 코드를 개인 단독 작업으로 주장하지 않습니다. 비공개 데이터와 내부 prompt도 이 저장소에 포함하지 않습니다.
+[전체 EXEM 프로젝트 및 LOOP 개발](https://github.com/Westzer00/exem-ai-workflow)

@@ -4,7 +4,7 @@
 
 보이스피싱 전화 음성을 STT로 변환한 뒤, **오류 가능성이 높은 구간만 우선 선별하고 사람이 실제 음성을 확인하도록 만든 품질관리 파이프라인**입니다.
 
-EXEM 기업연계 프로젝트에서 직접 맡은 **STT 오류 선별, 화자 정렬, 검수 계획과 화면**을 정리했습니다. 원본 음성이나 기업 서버 코드를 공개하지 않고 합성 샘플로 실행과 테스트를 확인할 수 있습니다.
+EXEM 기업연계 프로젝트에서 **STT 검수 로직, 화자 정렬, 검수 계획과 화면**을 개발했습니다. 개인 개발 코드와 합성 입력 예제로 실행 방법을 정리했습니다.
 
 ---
 
@@ -33,9 +33,9 @@ ASR output
 
 ---
 
-## 2. 프로젝트 규모
+## 2. STT 검수 작업 규모
 
-**5인 팀 프로젝트 전체 기준** (개인 기여는 [`CONTRIBUTION.md`](CONTRIBUTION.md) 참고):
+**개인 담당 데이터 처리·검수 범위:**
 
 - 전화 음성 **511건** STT 처리 (읽기 가능한 509건 합계 약 2,984분)
 - 검수 후 최종 **398건**의 검증 데이터셋 구축
@@ -43,7 +43,7 @@ ASR output
 - 구간만으로 판단하기 어려운 통화 **37건** 전체 재검토 대상으로 분류
 - 최종 결과는 자동 출력 그대로 사용하지 않고 Human Review layer를 거쳐 확정
 
-원본 음성과 실제 transcript는 공개하지 않습니다.
+*통화 원본과 실제 전사 내용은 제외.*
 
 ---
 
@@ -167,7 +167,7 @@ python -m src.speaker_alignment \
 
 [`app/review_app.py`](app/review_app.py)
 
-운영 UI의 핵심 흐름을 공개용 synthetic data로 재구성했습니다.
+실제 검수 흐름을 합성 데이터로 실행할 수 있는 Streamlit 화면입니다.
 
 ```text
 검수 지시
@@ -191,7 +191,7 @@ pip install -r requirements.txt
 streamlit run app/review_app.py
 ```
 
-실제 운영 버전에는 clip caching, ffmpeg 구간 추출, autosave, 다음 미검수 이동 등 검수 속도를 줄이기 위한 기능도 포함했습니다. 공개 repo에서는 데이터·경로 의존성이 큰 부분을 제외했습니다.
+실제 프로젝트에서는 오디오 구간 캐시, ffmpeg 구간 추출, 자동 저장, 다음 미검수 항목 이동 기능을 사용했습니다. 이 예제는 원본 데이터 연결 없이 실행됩니다.
 
 ---
 
@@ -199,7 +199,7 @@ streamlit run app/review_app.py
 
 [`src/nemo_diarization.py`](src/nemo_diarization.py)
 
-실제 workflow에서 사용한 구성 중 다음 부분을 공개용으로 정리했습니다.
+NeMo 화자 분리 실행에서 다룬 설정:
 
 - 16 kHz mono WAV validation
 - NeMo inference manifest 생성
@@ -250,9 +250,9 @@ voice-phishing-stt-qc-pipeline/
 
 ---
 
-## 10. 공개하지 않은 자료
+## 10. 자료 범위
 
-이 저장소에는 다음 자료를 넣지 않았습니다.
+기업 내부 자료와 원본 데이터 제외:
 
 - 실제 보이스피싱 음성 / transcript
 - 개인정보 또는 원본 corpus
@@ -261,4 +261,4 @@ voice-phishing-stt-qc-pipeline/
 - 프로젝트의 모든 팀원 코드
 - 과거 backup / 실험용 shell script
 
-개인 기여는 [`CONTRIBUTION.md`](CONTRIBUTION.md)에, 공개 전 정리 내용은 [`docs/public-release-notes.md`](docs/public-release-notes.md)에 적었습니다.
+[담당 내역](CONTRIBUTION.md) · [자료 구성](docs/public-release-notes.md)
