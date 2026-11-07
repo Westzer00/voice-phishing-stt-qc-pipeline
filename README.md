@@ -35,10 +35,10 @@ ASR output
 
 ## 2. STT 검수 작업 규모
 
-**개인 담당 데이터 처리·검수 범위:**
+**개인 담당 처리 범위와 팀 확정 산출물:**
 
-- 전화 음성 **511건** STT 처리 (읽기 가능한 509건 합계 약 2,984분)
-- 검수 후 최종 **398건**의 검증 데이터셋 구축
+- 전체 **511건**의 통화 중 읽기 가능한 **509건**(약 2,984분)을 대상으로 STT 처리·검수 진행. 2건은 파일을 읽을 수 없어 제외
+- 오류 선별·검수 작업을 거쳐 팀에서 최종 **398건**의 검증 데이터셋 확정(개인 담당 로직과 팀 최종 산출물 구분)
 - 검수 후보 선별 로직으로 **5,152개 오류 의심 구간** 추출
 - 구간만으로 판단하기 어려운 통화 **37건** 전체 재검토 대상으로 분류
 - 최종 결과는 자동 출력 그대로 사용하지 않고 Human Review layer를 거쳐 확정
@@ -109,9 +109,11 @@ streamlit run app/review_app.py
 | Compression ratio | 반복·환각 가능성 확인 |
 | No-speech probability | 무음/비음성 구간의 텍스트 생성 확인 |
 | Word confidence | 특정 단어 붕괴 탐지 |
-| Critical-term check | 숫자·금융·기관/신원 표현을 보수적으로 확인 |
+| Critical-term check | 숫자·금융·기관/신원 표현이 포함된 발화에서 다른 단어라도 신뢰도가 낮으면 우선 검수 후보로 지정 |
 | Repetition | 가까운 구간의 동일 문장 반복 확인 |
 | Segment length | 과도하게 긴 segment 확인 |
+
+이 규칙은 중요 용어 **자체**가 잘못 인식됐다고 판정하는 기능이 아닙니다. 중요 표현이 있는 발화에 낮은 confidence 단어가 공존하면 사람이 먼저 확인하게 하는 보수적인 선별 규칙입니다. 자동 오탈자 수정이나 정확도 향상을 보장하는 지표로 사용하지 않습니다.
 
 인접 candidate는 앞뒤 context를 포함해 하나의 listening span으로 병합합니다.
 
@@ -227,6 +229,7 @@ voice-phishing-stt-qc-pipeline/
 │   ├── __init__.py
 │   ├── qc_router.py
 │   ├── review_planner.py
+│   ├── review_records.py
 │   ├── speaker_alignment.py
 │   └── nemo_diarization.py
 ├── app/
@@ -238,6 +241,10 @@ voice-phishing-stt-qc-pipeline/
 ├── tests/
 │   ├── test_qc_router.py
 │   ├── test_review_planner.py
+│   ├── test_review_records.py
+│   ├── test_nemo_diarization.py
+│   ├── test_rttm_edge_cases.py
+│   ├── test_streamlit_app.py
 │   └── test_speaker_alignment.py
 ├── docs/
 │   ├── architecture.md
