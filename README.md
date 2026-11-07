@@ -143,7 +143,7 @@ word → speaker
 adjacent words → speaker turn
 ```
 
-시간 경계가 아주 조금 어긋난 경우에는 word midpoint 기준 0.5초 이내의 가장 가까운 diarization interval을 fallback으로 사용합니다.
+시간 경계가 아주 조금 어긋난 경우에는 word midpoint 기준 0.5초 이내의 가장 가까운 diarization interval을 fallback으로 사용합니다. 음수·역전·비유한 단어 시간값은 정렬을 계속하지 않고 오류로 처리합니다.
 
 ```bash
 python -m src.speaker_alignment \
