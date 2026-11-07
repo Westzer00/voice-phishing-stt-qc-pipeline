@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from src.review_records import make_review_record, reviews_json
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,15 +30,15 @@ def format_time(seconds: float) -> str:
 
 st.set_page_config(page_title="STT Review Demo", layout="wide")
 st.title("Voice Phishing STT · Human Review Demo")
-st.caption("공개용 synthetic data로 구성한 검수 화면입니다. 실제 음성·원문 데이터는 포함하지 않습니다.")
+st.caption("합성 텍스트를 사용한 검수 기록 예제 · 실제 통화 음성 및 원문 미포함")
 
 plan = load_plan()
 asr = load_asr()
 
-if "done" not in st.session_state:
-    st.session_state.done = set()
+if "reviews" not in st.session_state:
+    st.session_state.reviews = {}
 
-completed = len(st.session_state.done)
+completed = len(st.session_state.reviews)
 st.progress(completed / max(1, len(plan)))
 st.caption(f"처리 완료 {completed} / {len(plan)}")
 
@@ -48,7 +49,6 @@ with st.sidebar:
         ["LOCAL", "MULTI_LOCAL", "FULL"],
         default=["LOCAL", "MULTI_LOCAL", "FULL"],
     )
-    padding = st.slider("오디오 앞뒤 여유(초)", 0.0, 5.0, 2.0, 0.5)
 
 visible = plan[plan["audio_scope"].isin(scopes)].copy()
 if visible.empty:
@@ -66,7 +66,7 @@ with left:
     st.info(row["check_instruction"])
     st.metric("AUDIO_SCOPE", row["audio_scope"])
     st.write("검수 구간", f"{format_time(row['start_sec'])} ~ {format_time(row['end_sec'])}")
-    st.caption(f"실제 운영 UI에서는 앞뒤 ±{padding:g}초 clip을 ffmpeg cache에서 불러옵니다.")
+    st.caption("실제 음성 재생은 포함하지 않은 샘플입니다. 검수 결과 기록 흐름을 확인할 수 있습니다.")
 
 with right:
     st.markdown("### 📝 현재 STT")
@@ -83,24 +83,48 @@ with right:
 
 st.markdown("---")
 st.markdown("### 판정")
+saved = st.session_state.reviews.get(review_id, {})
+choices = [
+    "현재 STT 그대로 확정",
+    "수정 후 확정",
+    "음성에 없는 문장 삭제",
+    "구간 전체 재전사",
+    "판독 불가 / 추가 검수",
+]
 choice = st.radio(
     "처리 결과",
-    [
-        "현재 STT 그대로 확정",
-        "수정 후 확정",
-        "음성에 없는 문장 삭제",
-        "구간 전체 재전사",
-        "판독 불가 / 추가 검수",
-    ],
+    choices,
+    index=choices.index(saved.get("decision", choices[0])),
+    key=f"decision_{review_id}",
     horizontal=True,
 )
 
 correction = st.text_area(
     "수정 내용",
-    value=row["current_text"] if choice == "수정 후 확정" else "",
+    value=saved.get("correction_text", row["current_text"]),
+    key=f"correction_{review_id}",
     disabled=choice != "수정 후 확정",
 )
 
-if st.button("확정 저장", type="primary"):
-    st.session_state.done.add(review_id)
-    st.success(f"{review_id} 저장 완료 (demo session only)")
+if st.button("검수 결과 기록", type="primary"):
+    try:
+        record = make_review_record(
+            review_id=review_id,
+            decision=choice,
+            current_text=str(row["current_text"]),
+            correction_text=correction,
+            audio_scope=str(row["audio_scope"]),
+        )
+        st.session_state.reviews[review_id] = record
+        st.success(f"{review_id} 현재 세션에 검수 결과 기록 완료")
+    except ValueError as exc:
+        st.error(str(exc))
+
+if st.session_state.reviews:
+    st.download_button(
+        label="검수 기록 JSON 내려받기",
+        data=reviews_json(st.session_state.reviews),
+        file_name="sample_review_results.json",
+        mime="application/json",
+    )
+    st.caption("파일 다운로드 전까지 검수 결과는 브라우저 세션에만 유지됩니다.")

@@ -93,6 +93,8 @@ python -m src.speaker_alignment examples/sample_asr.json examples/sample_diariza
 streamlit run app/review_app.py
 ```
 
+[검수 결과 저장 로직](src/review_records.py) · [검증 테스트](tests/test_review_records.py)
+
 자동 테스트: `.github/workflows/tests.yml` (푸시·PR 시 실행). [GitHub Actions 테스트 결과](https://github.com/Westzer00/voice-phishing-stt-qc-pipeline/actions)에서 실제 실행 기록을 확인할 수 있습니다. NeMo 모델 추론에는 별도 설정이 필요합니다.
 
 ## 4. 오류 의심 구간 선별
@@ -167,7 +169,7 @@ python -m src.speaker_alignment \
 
 [`app/review_app.py`](app/review_app.py)
 
-실제 검수 흐름을 합성 데이터로 실행할 수 있는 Streamlit 화면입니다.
+합성 전사 텍스트를 사용한 Streamlit 검수 기록 데모입니다. **검수 판정과 수정 문장을 세션에 보관하고 JSON으로 내려받을 수 있습니다.** 실제 음성 재생·서버 저장 기능은 포함하지 않습니다.
 
 ```text
 검수 지시
