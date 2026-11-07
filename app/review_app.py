@@ -7,9 +7,9 @@ import pandas as pd
 import streamlit as st
 
 
-ROOT = Path(__file__).resolve().parent
-PLAN_PATH = ROOT / "sample_review_plan.csv"
-ASR_PATH = ROOT / "sample_asr.json"
+ROOT = Path(__file__).resolve().parents[1]
+PLAN_PATH = ROOT / "examples" / "sample_review_plan.csv"
+ASR_PATH = ROOT / "examples" / "sample_asr.json"
 
 
 @st.cache_data
