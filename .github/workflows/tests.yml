@@ -1,4 +1,4 @@
-name: QC unit tests
+name: STT QC pipeline checks
 on:
   push:
     branches: [main]
@@ -11,11 +11,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install test dependencies
-        run: python -m pip install pytest
-      - name: Run unit tests
+      - name: Install application and test dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Python syntax
+        run: python -m compileall -q src app tests
+      - name: Core and UI tests
         run: python -m pytest -q
-      - name: Smoke test public examples
+      - name: Run sample QC and speaker alignment
         run: |
           python -m src.qc_router examples/sample_asr.json > /dev/null
           python -m src.speaker_alignment examples/sample_asr.json examples/sample_diarization.json > /dev/null
