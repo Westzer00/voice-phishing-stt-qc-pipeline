@@ -29,3 +29,23 @@ def test_turn_split_on_speaker_change():
     ]
     _, turns = align_words(asr, diar)
     assert [turn["speaker"] for turn in turns] == ["A", "B"]
+
+import pytest
+from src.speaker_alignment import best_speaker_for_word, align_words
+
+
+def test_nearest_speaker_fallback_and_unknown():
+    intervals = [{"start": 1.0, "end": 2.0, "speaker": "A"}]
+    assert best_speaker_for_word(2.1, 2.3, intervals, fallback_sec=0.5)[0] == "A"
+    assert best_speaker_for_word(5.0, 5.3, intervals, fallback_sec=0.5)[0] == "UNKNOWN"
+
+
+def test_time_gap_starts_new_turn_for_same_speaker():
+    data = {"segments": [{"words": [
+        {"start": 0.0, "end": 0.2, "word": "안녕 "},
+        {"start": 1.9, "end": 2.1, "word": "다시"},
+    ]}]}
+    words, turns = align_words(data, [{"start": 0, "end": 4, "speaker": "A"}])
+    assert len(words) == 2
+    assert len(turns) == 2
+    assert turns[0]["speaker"] == turns[1]["speaker"] == "A"
