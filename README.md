@@ -1,10 +1,10 @@
-# 	🛡 Voice Phishing STT QC Pipeline 	🛡
+# Voice Phishing STT Quality Control & Human Review
 
 > **Whisper STT · High-Recall QC · NeMo Diarization · Human-in-the-loop Review**
 
-보이스피싱 전화 음성을 STT로 변환한 뒤, **오류 가능성이 높은 구간만 우선 선별하고 사람이 실제 음성을 확인하도록 만든 품질관리 pipeline**입니다.
+보이스피싱 전화 음성을 STT로 변환한 뒤, **오류 가능성이 높은 구간만 우선 선별하고 사람이 실제 음성을 확인하도록 만든 품질관리 파이프라인**입니다.
 
-이 저장소는 프로젝트 전체 서비스가 아니라, 공개 가능한 범위의 **STT / QC / diarization / review workflow**를 취업용으로 정리한 버전입니다.
+이 저장소는 EXEM 기업연계 프로젝트에서 수행한 **STT 품질검수·화자 정렬·사람 검토 기능을 공개 가능한 코드로 정리한 기술 포트폴리오**입니다. 팀 전체 서비스나 기업 내부 서버 소스를 그대로 공개한 것은 아닙니다.
 
 ---
 
@@ -35,7 +35,7 @@ ASR output
 
 ## 2. 프로젝트 규모
 
-최종 프로젝트 기준:
+**5인 팀 프로젝트 전체 기준** (개인 기여는 [`CONTRIBUTION.md`](CONTRIBUTION.md) 참고):
 
 - 전화 음성 **511건** STT 처리 (읽기 가능한 509건 합계 약 2,984분)
 - 검수 후 최종 **398건**의 검증 데이터셋 구축
@@ -77,13 +77,27 @@ Streamlit Human Review
 Corrected STT Layer
 ```
 
-자세한 구조: [`architecture.md`](architecture.md)
+자세한 구조: [`docs/architecture.md`](docs/architecture.md)
 
 ---
 
+## 실행 및 테스트
+
+Python 3.11 이상, 저장소 루트에서 실행하는 기준입니다. 실제 음성 파일 대신 `examples/`의 합성 데이터를 사용합니다.
+
+```bash
+python -m pip install -r requirements.txt
+python -m pytest -q
+python -m src.qc_router examples/sample_asr.json
+python -m src.speaker_alignment examples/sample_asr.json examples/sample_diarization.json
+streamlit run app/review_app.py
+```
+
+자동 테스트: `.github/workflows/tests.yml` (푸시·PR 시 실행). CI 결과는 GitHub Actions의 실제 실행 기록을 기준으로 확인하세요. NeMo 모델 추론에는 별도 설정이 필요합니다.
+
 ## 4. High-Recall QC Router
 
-[`qc_router.py`](qc_router.py)
+[`src/qc_router.py`](src/qc_router.py)
 
 다음 신호를 조합해 review candidate를 찾습니다.
 
@@ -100,14 +114,14 @@ Corrected STT Layer
 인접 candidate는 앞뒤 context를 포함해 하나의 listening span으로 병합합니다.
 
 ```bash
-python qc_router.py sample_asr.json
+python -m src.qc_router examples/sample_asr.json
 ```
 
 ---
 
 ## 5. Word-level Speaker Alignment
 
-[`speaker_alignment.py`](speaker_alignment.py)
+[`src/speaker_alignment.py`](src/speaker_alignment.py)
 
 Whisper segment 단위 speaker assignment 대신 **word timestamp와 diarization interval의 실제 시간 overlap**을 사용합니다.
 
@@ -128,16 +142,16 @@ adjacent words → speaker turn
 시간 경계가 아주 조금 어긋난 경우에는 word midpoint 기준 0.5초 이내의 가장 가까운 diarization interval을 fallback으로 사용합니다.
 
 ```bash
-python speaker_alignment.py \
-  sample_asr.json \
-  sample_diarization.json
+python -m src.speaker_alignment \
+  examples/sample_asr.json \
+  examples/sample_diarization.json
 ```
 
 ---
 
 ## 6. Audio Review Plan
 
-[`review_planner.py`](review_planner.py)
+[`src/review_planner.py`](src/review_planner.py)
 
 사람이 모든 통화를 처음부터 끝까지 듣지 않도록 issue 위치를 기준으로 listening window를 만듭니다.
 
@@ -151,7 +165,7 @@ python speaker_alignment.py \
 
 ## 7. Human Review UI
 
-[`review_app.py`](review_app.py)
+[`app/review_app.py`](app/review_app.py)
 
 운영 UI의 핵심 흐름을 공개용 synthetic data로 재구성했습니다.
 
@@ -174,7 +188,7 @@ python speaker_alignment.py \
 
 ```bash
 pip install -r requirements.txt
-streamlit run review_app.py
+streamlit run app/review_app.py
 ```
 
 실제 운영 버전에는 clip caching, ffmpeg 구간 추출, autosave, 다음 미검수 이동 등 검수 속도를 줄이기 위한 기능도 포함했습니다. 공개 repo에서는 데이터·경로 의존성이 큰 부분을 제외했습니다.
@@ -183,7 +197,7 @@ streamlit run review_app.py
 
 ## 8. NeMo Diarization
 
-[`nemo_diarization.py`](nemo_diarization.py)
+[`src/nemo_diarization.py`](src/nemo_diarization.py)
 
 실제 workflow에서 사용한 구성 중 다음 부분을 공개용으로 정리했습니다.
 
@@ -201,26 +215,38 @@ NeMo 전체 config와 checkpoint는 원본 프로젝트에 포함하지 않습�
 ## 9. Repository 구조
 
 ```text
-.
+voice-phishing-stt-qc-pipeline/
 ├── README.md
 ├── CONTRIBUTION.md
+├── .gitignore
 ├── requirements.txt
 ├── requirements-nemo.txt
-├── qc_router.py
-├── speaker_alignment.py
-├── review_planner.py
-├── nemo_diarization.py
-├── review_app.py
-├── sample_asr.json
-├── sample_diarization.json
-├── sample_review_plan.csv
-├── test_qc_router.py
-├── test_speaker_alignment.py
-├── test_review_planner.py
-├── architecture.md
-├── qc_rules.md
-└── public_release_notes.md
+├── src/
+│   ├── __init__.py
+│   ├── qc_router.py
+│   ├── review_planner.py
+│   ├── speaker_alignment.py
+│   └── nemo_diarization.py
+├── app/
+│   └── review_app.py
+├── examples/
+│   ├── sample_asr.json
+│   ├── sample_diarization.json
+│   └── sample_review_plan.csv
+├── tests/
+│   ├── test_qc_router.py
+│   ├── test_review_planner.py
+│   └── test_speaker_alignment.py
+├── docs/
+│   ├── architecture.md
+│   ├── qc-rules.md
+│   ├── public-release-notes.md
+│   └── change-log.md
+└── .github/workflows/
+    └── tests.yml
 ```
+
+`src/`는 검수·정렬 로직, `app/`은 검수 UI, `examples/`는 합성 샘플, `tests/`는 테스트, `docs/`는 설계 및 이력을 관리합니다.
 
 ---
 
@@ -235,4 +261,4 @@ NeMo 전체 config와 checkpoint는 원본 프로젝트에 포함하지 않습�
 - 프로젝트의 모든 팀원 코드
 - 과거 backup / 실험용 shell script
 
-공개 전 정리 내용은 [`public_release_notes.md`](public_release_notes.md)에 적었습니다.
+개인 기여는 [`CONTRIBUTION.md`](CONTRIBUTION.md)에, 공개 전 정리 내용은 [`docs/public-release-notes.md`](docs/public-release-notes.md)에 적었습니다.
