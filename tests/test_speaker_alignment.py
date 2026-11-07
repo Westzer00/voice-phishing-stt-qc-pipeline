@@ -30,9 +30,6 @@ def test_turn_split_on_speaker_change():
     _, turns = align_words(asr, diar)
     assert [turn["speaker"] for turn in turns] == ["A", "B"]
 
-import pytest
-from src.speaker_alignment import best_speaker_for_word, align_words
-
 
 def test_nearest_speaker_fallback_and_unknown():
     intervals = [{"start": 1.0, "end": 2.0, "speaker": "A"}]
