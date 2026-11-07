@@ -1,16 +1,16 @@
-# Voice Phishing STT Quality Control & Human Review
+# 보이스피싱 음성인식 검수·사람 검토 파이프라인
 
-> **Whisper STT · High-Recall QC · NeMo Diarization · Human-in-the-loop Review**
+> **Whisper 음성인식 · 오류 의심 구간 선별 · NeMo 화자 구분 · 사람 검토**
 
 보이스피싱 전화 음성을 STT로 변환한 뒤, **오류 가능성이 높은 구간만 우선 선별하고 사람이 실제 음성을 확인하도록 만든 품질관리 파이프라인**입니다.
 
-이 저장소는 EXEM 기업연계 프로젝트에서 수행한 **STT 품질검수·화자 정렬·사람 검토 기능을 공개 가능한 코드로 정리한 기술 포트폴리오**입니다. 팀 전체 서비스나 기업 내부 서버 소스를 그대로 공개한 것은 아닙니다.
+EXEM 기업연계 프로젝트에서 직접 맡은 **STT 오류 선별, 화자 정렬, 검수 계획과 화면**을 정리했습니다. 원본 음성이나 기업 서버 코드를 공개하지 않고 합성 샘플로 실행과 테스트를 확인할 수 있습니다.
 
 ---
 
-## 1. 왜 별도 QC가 필요했나
+## 1. 해결한 문제
 
-Whisper의 confidence가 높아도 금융·수사 도메인의 핵심 단어가 잘못 인식되는 경우가 있었습니다. 그래서 confidence 하나만으로 자동 확정하지 않고 여러 신호를 함께 사용했습니다.
+Whisper의 신뢰도가 높게 표시된 문장에서도 기관명·금액·금융용어가 틀리는 사례가 있었습니다. 틀린 문장이 뒤 단계의 검색·분류·생성 결과까지 바꿀 수 있어, 자동 결과를 그대로 확정하는 대신 **의심 구간을 먼저 선별하고 사람이 원음을 확인**하도록 만들었습니다.
 
 ```text
 ASR output
@@ -29,7 +29,7 @@ ASR output
        Human Review
 ```
 
-**QC flag는 자동 수정 규칙이 아니라 review candidate를 찾기 위한 high-recall screening입니다.**
+**QC 표시가 곧 오류 확정은 아닙니다.** 확인이 필요한 구간을 놓치지 않도록 넓게 선별하는 기준입니다.
 
 ---
 
@@ -39,15 +39,15 @@ ASR output
 
 - 전화 음성 **511건** STT 처리 (읽기 가능한 509건 합계 약 2,984분)
 - 검수 후 최종 **398건**의 검증 데이터셋 구축
-- QC router에서 **5,152개 suspicious candidate segment** 선별
-- call-level anomaly **37건** 별도 재검토
+- 검수 후보 선별 로직으로 **5,152개 오류 의심 구간** 추출
+- 구간만으로 판단하기 어려운 통화 **37건** 전체 재검토 대상으로 분류
 - 최종 결과는 자동 출력 그대로 사용하지 않고 Human Review layer를 거쳐 확정
 
 원본 음성과 실제 transcript는 공개하지 않습니다.
 
 ---
 
-## 3. Pipeline
+## 3. 전체 검수 흐름
 
 ```text
 Voice Call
@@ -93,9 +93,9 @@ python -m src.speaker_alignment examples/sample_asr.json examples/sample_diariza
 streamlit run app/review_app.py
 ```
 
-자동 테스트: `.github/workflows/tests.yml` (푸시·PR 시 실행). CI 결과는 GitHub Actions의 실제 실행 기록을 기준으로 확인하세요. NeMo 모델 추론에는 별도 설정이 필요합니다.
+자동 테스트: `.github/workflows/tests.yml` (푸시·PR 시 실행). [GitHub Actions 테스트 결과](https://github.com/Westzer00/voice-phishing-stt-qc-pipeline/actions)에서 실제 실행 기록을 확인할 수 있습니다. NeMo 모델 추론에는 별도 설정이 필요합니다.
 
-## 4. High-Recall QC Router
+## 4. 오류 의심 구간 선별
 
 [`src/qc_router.py`](src/qc_router.py)
 
@@ -119,7 +119,7 @@ python -m src.qc_router examples/sample_asr.json
 
 ---
 
-## 5. Word-level Speaker Alignment
+## 5. 단어별 화자 정렬
 
 [`src/speaker_alignment.py`](src/speaker_alignment.py)
 
@@ -149,7 +149,7 @@ python -m src.speaker_alignment \
 
 ---
 
-## 6. Audio Review Plan
+## 6. 검수 범위 결정
 
 [`src/review_planner.py`](src/review_planner.py)
 
@@ -163,7 +163,7 @@ python -m src.speaker_alignment \
 
 ---
 
-## 7. Human Review UI
+## 7. 사람 검토 화면
 
 [`app/review_app.py`](app/review_app.py)
 
@@ -195,7 +195,7 @@ streamlit run app/review_app.py
 
 ---
 
-## 8. NeMo Diarization
+## 8. NeMo 화자 구분
 
 [`src/nemo_diarization.py`](src/nemo_diarization.py)
 
@@ -212,7 +212,7 @@ NeMo 전체 config와 checkpoint는 원본 프로젝트에 포함하지 않습�
 
 ---
 
-## 9. Repository 구조
+## 9. 파일 구조
 
 ```text
 voice-phishing-stt-qc-pipeline/
@@ -246,11 +246,11 @@ voice-phishing-stt-qc-pipeline/
     └── tests.yml
 ```
 
-`src/`는 검수·정렬 로직, `app/`은 검수 UI, `examples/`는 합성 샘플, `tests/`는 테스트, `docs/`는 설계 및 이력을 관리합니다.
+`src/`에는 검수·정렬 코드, `app/`에는 검수 화면, `examples/`에는 합성 입력, `tests/`에는 테스트, `docs/`에는 설계 판단과 변경 내역을 뒀습니다.
 
 ---
 
-## 10. 공개 범위
+## 10. 공개하지 않은 자료
 
 이 저장소에는 다음 자료를 넣지 않았습니다.
 
