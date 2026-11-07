@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from pathlib import Path
 
@@ -11,6 +12,16 @@ def best_speaker_for_word(
     diarization: list[dict],
     fallback_sec: float = 0.5,
 ) -> tuple[str, float]:
+    if (
+        not math.isfinite(word_start)
+        or not math.isfinite(word_end)
+        or word_start < 0
+        or word_end < word_start
+        or not math.isfinite(fallback_sec)
+        or fallback_sec < 0
+    ):
+        raise ValueError(f"Invalid ASR word interval: {word_start}..{word_end}")
+
     best_speaker = "UNKNOWN"
     best_overlap = 0.0
 
